@@ -81,12 +81,21 @@
       const convertedText = document.getElementById("convertedText");
 
       speechButton.addEventListener("click", () => {
+        if (!navigator.onLine) {
+          Swal.fire({
+            icon: "error",
+            title: "خطا",
+            text: "دسترسی به اینترنت موجود نیست.",
+          });
+          return;
+        }
+
         recognition = new webkitSpeechRecognition() || new SpeechRecognition();
         recognition.lang = "fa-IR";
 
         recognition.onresult = (event) => {
           const speechToText = event.results[0][0].transcript;
-          if (speechToText.toLowerCase().includes("stop")) {
+          if (speechToText.toLowerCase().includes("استاپ")) {
             recognition.stop();
           } else {
             convertSpeechToText(speechToText);
