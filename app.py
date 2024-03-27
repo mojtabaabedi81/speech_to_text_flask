@@ -1,7 +1,9 @@
 from flask import Flask, render_template, request, jsonify
 import speech_recognition as sr
+from googletrans import Translator
 
 app = Flask(__name__)
+translator = Translator()
 
 @app.route('/')
 def index():
@@ -9,9 +11,6 @@ def index():
 
 @app.route('/speech-to-text', methods=['POST'])
 def speech_to_text():
-    # if 'audio' not in request.files:
-    #     return jsonify({'error': 'No audio file found in request'}), 400
-
     audio_file = request.files['audio']
     if audio_file.filename == '':
         return jsonify({'error': 'No selected file'}), 400
