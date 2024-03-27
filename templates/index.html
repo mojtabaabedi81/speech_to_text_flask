@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="fa">
   <head>
     <meta charset="UTF-8" />
@@ -59,6 +60,8 @@
                 class="form-control mt-3"
                 placeholder="متن تبدیل شده اینجا نمایش داده می‌شود"
               />
+              <!-- Display converted text here -->
+              <p id="convertedText" class="mt-3"></p>
             </div>
           </div>
         </div>
@@ -72,34 +75,40 @@
 
     <!-- Speech Recognition API -->
     <script>
+      let recognition;
       const speechButton = document.getElementById("speechButton");
       const textInput = document.getElementById("textInput");
+      const convertedText = document.getElementById("convertedText");
 
       speechButton.addEventListener("click", () => {
-        const recognition =
-          new webkitSpeechRecognition() || new SpeechRecognition();
+        recognition = new webkitSpeechRecognition() || new SpeechRecognition();
         recognition.lang = "fa-IR";
 
         recognition.onresult = (event) => {
           const speechToText = event.results[0][0].transcript;
-          convertSpeechToText(speechToText);
+          if (speechToText.toLowerCase().includes("stop")) {
+            recognition.stop();
+          } else {
+            convertSpeechToText(speechToText);
+          }
         };
 
         recognition.start();
       });
 
       function convertSpeechToText(text) {
+        const formData = new FormData();
+        formData.append("audio", text);
+
         fetch("/speech-to-text", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ text: text }),
+          body: formData,
         })
           .then((response) => response.json())
           .then((data) => {
             if (data.text) {
               textInput.value = data.text;
+              convertedText.innerText = "متن تبدیل شده: " + data.text;
             } else if (data.error) {
               console.error(data.error);
               textInput.value = "خطا: گفتار شناسایی نشد";
