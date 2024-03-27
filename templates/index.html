@@ -1,0 +1,115 @@
+<html lang="fa">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Speech to text</title>
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <a class="navbar-brand" href="#">برنامه فلسک من</a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarNav"
+        aria-controls="navbarNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item active">
+            <a class="nav-link" href="#"
+              >خانه <span class="sr-only">(current)</span></a
+            >
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">درباره ما</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">تماس</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="container mt-5">
+      <div class="row">
+        <div class="col-md-6 offset-md-3">
+          <div class="card">
+            <div class="card-header">خوش آمدید به برنامه من</div>
+            <div class="card-body">
+              <p>
+                این یک برنامه وب ساده است که با استفاده از فلسک و بوت‌استرپ
+                ساخته شده است.
+              </p>
+              <button id="speechButton" class="btn btn-primary">
+                تبدیل گفتار به متن
+              </button>
+              <input
+                type="text"
+                id="textInput"
+                class="form-control mt-3"
+                placeholder="متن تبدیل شده اینجا نمایش داده می‌شود"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <!-- Speech Recognition API -->
+    <script>
+      const speechButton = document.getElementById("speechButton");
+      const textInput = document.getElementById("textInput");
+
+      speechButton.addEventListener("click", () => {
+        const recognition =
+          new webkitSpeechRecognition() || new SpeechRecognition();
+        recognition.lang = "fa-IR";
+
+        recognition.onresult = (event) => {
+          const speechToText = event.results[0][0].transcript;
+          convertSpeechToText(speechToText);
+        };
+
+        recognition.start();
+      });
+
+      function convertSpeechToText(text) {
+        fetch("/speech-to-text", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ text: text }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.text) {
+              textInput.value = data.text;
+            } else if (data.error) {
+              console.error(data.error);
+              textInput.value = "خطا: گفتار شناسایی نشد";
+            }
+          })
+          .catch((error) => {
+            console.error("خطا:", error);
+            textInput.value = "خطا: تبدیل گفتار به متن انجام نشد";
+          });
+      }
+    </script>
+  </body>
+</html>
