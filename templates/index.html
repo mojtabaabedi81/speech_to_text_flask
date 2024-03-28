@@ -81,15 +81,6 @@
       const convertedText = document.getElementById("convertedText");
 
       speechButton.addEventListener("click", () => {
-        if (!navigator.onLine) {
-          Swal.fire({
-            icon: "error",
-            title: "خطا",
-            text: "دسترسی به اینترنت موجود نیست.",
-          });
-          return;
-        }
-
         recognition = new webkitSpeechRecognition() || new SpeechRecognition();
         recognition.lang = "fa-IR";
 
@@ -105,11 +96,11 @@
         recognition.start();
       });
 
-      function convertSpeechToText(text) {
+      function convertSpeechToText(audioData) {
         const formData = new FormData();
-        formData.append("audio", text);
+        formData.append("audio", audioData);
 
-        fetch("/speech-to-text", {
+        fetch("/speech-to-text/", {
           method: "POST",
           body: formData,
         })
@@ -120,7 +111,7 @@
               convertedText.innerText = "متن تبدیل شده: " + data.text;
             } else if (data.error) {
               console.error(data.error);
-              textInput.value = "خطا: گفتار شناسایی نشد";
+              textInput.value = "خطا: " + data.error; // Set an appropriate error message
             }
           })
           .catch((error) => {
@@ -128,6 +119,18 @@
             textInput.value = "خطا: تبدیل گفتار به متن انجام نشد";
           });
       }
+
+      function checkInternetConnection() {
+        return window.navigator.onLine;
+      }
+
+      function showAlertIfNoInternet() {
+        if (!checkInternetConnection()) {
+          alert("you don't have te internet");
+        }
+      }
+
+      window.onload = showAlertIfNoInternet;
     </script>
   </body>
 </html>
